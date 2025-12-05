@@ -1,0 +1,136 @@
+openapi: '3.0.0'
+info:
+  version: 1.0.0
+  title: Credit Saison India API
+  license:
+    name: MIT
+servers:
+  - url: https://api.creditsaison.in/v1
+paths:
+  /credits:
+    get:
+      summary: Retrieve a paginated list of all credit assessments in the system, supporting filtering by risk level and sorting by assessment date for comprehensive portfolio analysis.
+      operationId: listCredits
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of credit assessments to return per page, with a maximum limit of 100 entries to ensure optimal performance.
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Successful response containing a paginated array of credit assessments with detailed scoring information and borrower profiles.
+          headers:
+            x-next:
+              description: Link to retrieve the next page of results for seamless pagination through large datasets.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credits'
+        default:
+          description: Standard error response for unexpected issues, including server errors or invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Initiate a new credit assessment by submitting borrower information and financial data for comprehensive risk evaluation and scoring.
+      operationId: createCreditAssessment
+      responses:
+        201:
+          description: Credit assessment successfully created and processing initiated, with unique identifier returned for status tracking.
+        default:
+          description: Error response for failed credit assessment creation, including validation errors or system unavailability.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /credits/{creditId}:
+    get:
+      summary: Retrieve detailed information for a specific credit assessment by its unique identifier, including scoring results and assessment metadata.
+      operationId: getCreditById
+      parameters:
+        - name: creditId
+          in: path
+          required: true
+          description: Unique identifier for the credit assessment to retrieve, used for accessing specific evaluation results.
+          schema:
+            type: string
+      responses:
+        200:
+          description: Detailed credit assessment data successfully retrieved, containing scoring metrics and borrower information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credits'
+        default:
+          description: Error response for failed credit retrieval, such as invalid ID or access restrictions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /risk-analysis:
+    post:
+      summary: Perform comprehensive risk analysis on a portfolio of credit assessments to identify trends and potential vulnerabilities.
+      operationId: analyzeRisk
+      responses:
+        200:
+          description: Risk analysis completed successfully with detailed insights into portfolio risk distribution and recommendations.
+        default:
+          description: Error response for failed risk analysis, including data processing errors or insufficient portfolio data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /compliance-reports:
+    get:
+      summary: Generate regulatory compliance reports for credit assessments, ensuring adherence to RBI guidelines and data protection standards.
+      operationId: getComplianceReports
+      responses:
+        200:
+          description: Compliance report generated successfully with detailed audit trail and regulatory status information.
+        default:
+          description: Error response for failed report generation, such as missing data or processing limitations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Credit:
+      required:
+        - id
+        - borrowerId
+      properties:
+        id:
+          type: string
+        borrowerId:
+          type: string
+        creditScore:
+          type: integer
+          format: int32
+        riskLevel:
+          type: string
+        assessmentDate:
+          type: string
+          format: date-time
+        tag:
+          type: string
+    Credits:
+      type: array
+      items:
+        $ref: '#/components/schemas/Credit'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
